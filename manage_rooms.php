@@ -36,7 +36,7 @@ $rooms = $pdo->query("SELECT * FROM rooms")->fetchAll();
 <div class="d-flex">
     <?php include 'includes/menu.php'; ?>
     <div id="content" class="container-fluid p-3">
-        <h2>Gerenciar Salas</h2>
+        <h2>ReunionPro</h2>
         <?php if (is_admin()): ?>
         <form method="post" action="">
             <div class="mb-3">
