@@ -1,7 +1,7 @@
 
 <?php
 $host = 'localhost';
-$dbname = 'gerenciamneto_sala';
+$dbname = 'gerenciamento_sala';
 $username = 'root';
 $password = '';
 
