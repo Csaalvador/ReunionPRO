@@ -1,7 +1,7 @@
 
 <?php
 $host = 'localhost';
-$dbname = 'gerenciamento_sala';
+$dbname = 'reunionPro';
 $username = 'root';
 $password = '';
 
