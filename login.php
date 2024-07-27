@@ -6,19 +6,24 @@ require 'includes/functions.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
-    
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-    
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['name'] = $user['name'];
-        $_SESSION['access_level'] = $user['access_level'];
-        header('Location: index.php');
-        exit();
+    // Verificação do formato do e-mail
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $login_error = "Formato de e-mail inválido.";
     } else {
         $login_error = "Email ou senha incorretos.";
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['name'] = $user['name'];
+            $_SESSION['access_level'] = $user['access_level'];
+            header('Location: index.php');
+            exit();
+        } else {
+            $login_error = "Email ou senha incorretos.";
+        }
     }
 }
 ?>
@@ -32,6 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="d-flex vh-100">
         <div class="container d-flex justify-content-center align-items-center">
             <div class="text-center w-50">
+            <figure class="figure">
+                    <img src="images/login.png" class="figure-img img-fluid rounded login" alt="capivara" style="
+        width: 90px;">
+                </figure>
                 <h2>Login</h2>
                 <form class="form-signin w-100 m-auto" method="post" action="">
                     <?php if (!empty($login_error)): ?>
