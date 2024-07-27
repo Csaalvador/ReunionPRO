@@ -1,24 +1,26 @@
 <?php
 require 'includes/conexao.php';
 require 'includes/functions.php';
-redirect_if_not_logged_in();
+redirect_if_not_admin();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $room_id = $_POST['room_id'];
-    $user_id = $_SESSION['user_id'];
-    $start_time = $_POST['start_time'];
-    $end_time = $_POST['end_time'];
-
-    // Verifica se a sala já está reservada no período solicitado
-    $stmt = $pdo->prepare("SELECT * FROM reservations WHERE room_id = ? AND (start_time < ? AND end_time > ?)");
-    $stmt->execute([$room_id, $end_time, $start_time]);
-    if ($stmt->rowCount() > 0) {
-        echo "A sala já está reservada nesse período.";
-    } else {
-        // Cria a reserva
-        $stmt = $pdo->prepare("INSERT INTO reservations (room_id, user_id, start_time, end_time) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$room_id, $user_id, $start_time, $end_time]);
-        echo "Reserva realizada com sucesso.";
+    if (isset($_POST['create'])) {
+        $name = $_POST['name'];
+        $capacity = $_POST['capacity'];
+        $location = $_POST['location'];
+        $stmt = $pdo->prepare("INSERT INTO rooms (name, capacity, location) VALUES (?, ?, ?)");
+        $stmt->execute([$name, $capacity, $location]);
+    } elseif (isset($_POST['update'])) {
+        $id = $_POST['id'];
+        $name = $_POST['name'];
+        $capacity = $_POST['capacity'];
+        $location = $_POST['location'];
+        $stmt = $pdo->prepare("UPDATE rooms SET name = ?, capacity = ?, location = ? WHERE id = ?");
+        $stmt->execute([$name, $capacity, $location, $id]);
+    } elseif (isset($_POST['delete'])) {
+        $id = $_POST['id'];
+        $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
+        $stmt->execute([$id]);
     }
 }
 $rooms = $pdo->query("SELECT * FROM rooms")->fetchAll();
@@ -26,7 +28,7 @@ $rooms = $pdo->query("SELECT * FROM rooms")->fetchAll();
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Reservar Sala</title>
+    <title>Gerenciar Salas</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -34,28 +36,53 @@ $rooms = $pdo->query("SELECT * FROM rooms")->fetchAll();
 <div class="d-flex">
     <?php include 'includes/menu.php'; ?>
     <div id="content" class="container-fluid p-3">
-        <h2>Reservar Sala</h2>
+        <h2>Gerenciar Salas</h2>
+        <?php if (is_admin()): ?>
         <form method="post" action="">
             <div class="mb-3">
-                <label for="room_id" class="form-label">Sala</label>
-                <select class="form-control" id="room_id" name="room_id" required>
-                    <?php
-                    $rooms = $pdo->query("SELECT * FROM rooms")->fetchAll();
-                    foreach ($rooms as $room): ?>
-                        <option value="<?= $room['id'] ?>"><?= $room['name'] ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="name" class="form-label">Nome da Sala</label>
+                <input type="text" class="form-control" id="name" name="name" required>
             </div>
             <div class="mb-3">
-                <label for="start_time" class="form-label">Data e Hora de Início</label>
-                <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                <label for="capacity" class="form-label">Capacidade</label>
+                <input type="number" class="form-control" id="capacity" name="capacity" required>
             </div>
             <div class="mb-3">
-                <label for="end_time" class="form-label">Data e Hora de Término</label>
-                <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                <label for="location" class="form-label">Localização</label>
+                <input type="text" class="form-control" id="location" name="location">
             </div>
-            <button type="submit" class="btn btn-primary">Reservar</button>
+            <button type="submit" name="create" class="btn btn-primary">Criar Sala</button>
         </form>
+        <?php endif; ?>
+        <hr>
+        <h3>Salas Existentes</h3>
+        <ul class="list-group">
+            <?php
+            $rooms = $pdo->query("SELECT * FROM rooms")->fetchAll();
+            foreach ($rooms as $room): ?>
+                <li class="list-group-item">
+                    <form method="post" action="">
+                        <input type="hidden" name="id" value="<?= $room['id'] ?>">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nome da Sala</label>
+                            <input type="text" class="form-control" name="name" value="<?= $room['name'] ?>" required <?= !is_admin() ? 'readonly' : '' ?>>
+                        </div>
+                        <div class="mb-3">
+                            <label for="capacity" class="form-label">Capacidade</label>
+                            <input type="number" class="form-control" name="capacity" value="<?= $room['capacity'] ?>" required <?= !is_admin() ? 'readonly' : '' ?>>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Localização</label>
+                            <input type="text" class="form-control" name="location" value="<?= $room['location'] ?>" <?= !is_admin() ? 'readonly' : '' ?>>
+                        </div>
+                        <?php if (is_admin()): ?>
+                            <button type="submit" name="update" class="btn btn-success">Atualizar</button>
+                            <button type="submit" name="delete" class="btn btn-danger">Excluir</button>
+                        <?php endif; ?>
+                    </form>
+                </li>
+            <?php endforeach; ?>
+        </ul>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
