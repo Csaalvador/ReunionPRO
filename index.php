@@ -5,62 +5,38 @@ require 'includes/functions.php';
 require 'includes/messages.php';
 redirect_if_not_logged_in();
 
-// Inicialização das variáveis com valores padrão
-$reservas_ativas_hoje = 0;
-$reservas_ativas_semana = 0;
-$reservas_ativas_mes = 0;
-$reservas_finalizadas_hoje = 0;
-$reservas_finalizadas_semana = 0;
-$reservas_finalizadas_mes = 0;
-$salas_totais = 0;
-
 // Consultas ao banco de dados
 try {
     // Reservas Ativas (ainda não iniciadas)
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE start_time >= NOW() AND DATE(start_time) = CURDATE()");
     $stmt->execute();
     $reservas_ativas_hoje = $stmt->fetchColumn();
-    if ($reservas_ativas_hoje === false) $reservas_ativas_hoje = 0;
-    error_log("Reservas ativas hoje: $reservas_ativas_hoje");
 
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE start_time >= NOW() AND YEARWEEK(start_time, 1) = YEARWEEK(CURDATE(), 1)");
     $stmt->execute();
     $reservas_ativas_semana = $stmt->fetchColumn();
-    if ($reservas_ativas_semana === false) $reservas_ativas_semana = 0;
-    error_log("Reservas ativas semana: $reservas_ativas_semana");
 
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE start_time >= NOW() AND MONTH(start_time) = MONTH(CURDATE()) AND YEAR(start_time) = YEAR(CURDATE())");
     $stmt->execute();
     $reservas_ativas_mes = $stmt->fetchColumn();
-    if ($reservas_ativas_mes === false) $reservas_ativas_mes = 0;
-    error_log("Reservas ativas mês: $reservas_ativas_mes");
 
     // Reservas Finalizadas (Considerando end_time)
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE end_time < NOW() AND DATE(end_time) = CURDATE()");
     $stmt->execute();
     $reservas_finalizadas_hoje = $stmt->fetchColumn();
-    if ($reservas_finalizadas_hoje === false) $reservas_finalizadas_hoje = 0;
-    error_log("Reservas finalizadas hoje: $reservas_finalizadas_hoje");
 
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE end_time < NOW() AND YEARWEEK(end_time, 1) = YEARWEEK(CURDATE(), 1)");
     $stmt->execute();
     $reservas_finalizadas_semana = $stmt->fetchColumn();
-    if ($reservas_finalizadas_semana === false) $reservas_finalizadas_semana = 0;
-    error_log("Reservas finalizadas semana: $reservas_finalizadas_semana");
 
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE end_time < NOW() AND MONTH(end_time) = MONTH(CURDATE()) AND YEAR(end_time) = YEAR(CURDATE())");
     $stmt->execute();
     $reservas_finalizadas_mes = $stmt->fetchColumn();
-    if ($reservas_finalizadas_mes === false) $reservas_finalizadas_mes = 0;
-    error_log("Reservas finalizadas mês: $reservas_finalizadas_mes");
 
     // Salas Totais
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM rooms");
     $stmt->execute();
     $salas_totais = $stmt->fetchColumn();
-    if ($salas_totais === false) $salas_totais = 0;
-    error_log("Salas totais: $salas_totais");
-
 } catch (PDOException $e) {
     add_message("Erro ao buscar informações: " . $e->getMessage(), 'danger');
 }
@@ -80,7 +56,7 @@ try {
     <?php include 'includes/menu.php'; ?>
     <div id="content" class="container-fluid p-3">
         <div class="d-flex align-items-center">
-            <img src="images/user.png" class="flex-shrink-0" alt="reunion">
+            <img src="images/favicon32.png" class="flex-shrink-0" alt="capivara">
             <div class="flex-grow-1 ms-3">
                 <h5 class="mt-0">Bem-vindo, <?= htmlspecialchars($_SESSION['name']) ?>!</h5>
                 <p>Aqui você pode gerenciar suas reservas e visualizar informações importantes.</p>
