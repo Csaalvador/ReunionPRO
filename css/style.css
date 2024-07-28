@@ -44,3 +44,12 @@ body, html {
 .login-form .form-label {
     padding-top: 0.5rem;
 }
+
+.form-label{
+    background-color: transparent !important;
+}
+
+.form-floating>.form-control-plaintext~label::after, .form-floating>.form-control:focus~label::after, .form-floating>.form-control:not(:placeholder-shown)~label::after, .form-floating>.form-select~label::after {
+
+    background-color: transparent ;
+}
