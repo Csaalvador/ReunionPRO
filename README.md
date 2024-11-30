@@ -76,6 +76,14 @@ CREATE TABLE reservations (
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+    CREATE TABLE login_attempts (
+    ->     id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     ip VARCHAR(45) NOT NULL,
+    ->     attempts INT NOT NULL DEFAULT 0,
+    ->     last_attempt DATETIME DEFAULT NULL,
+    ->     UNIQUE KEY (ip)
+    -> );
 ```
 
 ## Entrega do projeto
